@@ -1,7 +1,7 @@
 name: InfiniteHomes
 version: 1.0.1
 main: com.user404_.infinitehomes.InfiniteHomes
-api-version: 1.16
+api-version: 1.21
 commands:
   sethome:
     description: Set a home with the given name.
