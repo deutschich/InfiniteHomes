@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -27,6 +28,12 @@ public class InfiniteHomes extends JavaPlugin {
         homes = new HashMap<>();
         setupHomesConfig();
         loadHomesFromConfig();
+
+        // Standardkonfiguration erstellen, falls nicht vorhanden
+        getConfig().addDefault("max-homes", -1);
+        getConfig().options().copyDefaults(true);
+        saveConfig();
+
         getLogger().info("InfiniteHomes plugin enabled!");
     }
 
@@ -162,6 +169,33 @@ public class InfiniteHomes extends JavaPlugin {
             } else {
                 player.sendMessage("§cHome '" + homeName + "' does not exist.");
             }
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("homes")) {
+            // List all homes of the player
+            if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
+                player.sendMessage("§cYou don't have any homes set.");
+                return true;
+            }
+
+            Set<String> homeNames = homes.get(playerUuid).keySet();
+            int maxHomes = getConfig().getInt("max-homes", -1);
+            int currentHomes = homeNames.size();
+
+            String limitText = (maxHomes == -1) ? "unlimited" : String.valueOf(maxHomes);
+            player.sendMessage("§aYour homes (§e" + currentHomes + "§a/§e" + limitText + "§a):");
+
+            // List all home names
+            StringBuilder homesList = new StringBuilder();
+            for (String home : homeNames) {
+                if (homesList.length() > 0) {
+                    homesList.append("§a, ");
+                }
+                homesList.append("§e").append(home);
+            }
+
+            player.sendMessage(homesList.toString());
             return true;
         }
 

@@ -1,7 +1,7 @@
 name: InfiniteHomes
-version: 1.0
-main: com.user404_.infinitehomes.InfiniteHomes
-api-version: 1.21
+version: 1.0.1
+main: com.user404.infinitehomes.InfiniteHomes
+api-version: 1.16
 commands:
   sethome:
     description: Set a home with the given name.
@@ -12,6 +12,9 @@ commands:
   home:
     description: Teleport to a home with the given name.
     usage: /home <name>
+  homes:
+    description: List all your homes.
+    usage: /homes
   homecount:
     description: Set the global home limit (OP only).
     usage: /homecount <number>
