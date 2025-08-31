@@ -19,3 +19,6 @@ commands:
   homecount:
     description: Set the global home limit (OP only).
     usage: /homecount <number>
+  homecooldown:
+    description: Set the global home cooldown (OP only).
+    usage: /homecooldown <seconds>

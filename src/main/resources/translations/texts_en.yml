@@ -1,0 +1,32 @@
+# InfiniteHomes - English Translation
+
+# General messages
+no_permission: "§cYou don't have permission to use this command."
+invalid_number: "§cPlease provide a valid number."
+cooldown.range: "§cCooldown must be between -1 and 60 seconds."
+
+# Command usage
+usage.sethome: "§cUsage: /sethome <name>"
+usage.delhome: "§cUsage: /delhome <name>"
+usage.home: "§cUsage: /home <name>"
+usage.homecount: "§cUsage: /homecount <number>"
+usage.homecooldown: "§cUsage: /homecooldown <seconds>"
+
+# Home messages
+home.set: "§aHome '{home}' set!"
+home.deleted: "§aHome '{home}' deleted!"
+home.not_exist: "§cHome '{home}' does not exist."
+home.teleport: "§aTeleported to home '{home}'!"
+home.cooldown: "§cYou must wait {time} seconds before using /home again."
+
+# Homes list messages
+homes.none: "§cYou don't have any homes set."
+homes.unlimited: "unlimited"
+homes.list.header: "§aYour homes (§e{current}§a/§e{max}§a):"
+homes.list.items: "§e{homes}"
+homes.limit.reached: "§cYou have reached the maximum number of homes ({max})."
+homes.limit.set: "§aGlobal home limit set to {max}."
+
+# Cooldown messages
+cooldown.set: "§aGlobal home cooldown set to {time} seconds."
+cooldown.disabled: "§aHome cooldown disabled."

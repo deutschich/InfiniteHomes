@@ -1,0 +1,32 @@
+# InfiniteHomes - Deutsche Übersetzung
+
+# Allgemeine Nachrichten
+no_permission: "§cDu hast keine Berechtigung, diesen Befehl zu verwenden."
+invalid_number: "§cBitte gib eine gültige Zahl ein."
+cooldown.range: "§cCooldown muss zwischen -1 und 60 Sekunden liegen."
+
+# Befehlsverwendung
+usage.sethome: "§cVerwendung: /sethome <Name>"
+usage.delhome: "§cVerwendung: /delhome <Name>"
+usage.home: "§cVerwendung: /home <Name>"
+usage.homecount: "§cVerwendung: /homecount <Zahl>"
+usage.homecooldown: "§cVerwendung: /homecooldown <Sekunden>"
+
+# Home-Nachrichten
+home.set: "§aHome '{home}' gesetzt!"
+home.deleted: "§aHome '{home}' gelöscht!"
+home.not_exist: "§cHome '{home}' existiert nicht."
+home.teleport: "§aZu Home '{home}' teleportiert!"
+home.cooldown: "§cDu musst {time} Sekunden warten, bevor du /home wieder verwenden kannst."
+
+# Home-Liste Nachrichten
+homes.none: "§cDu hast keine Homes gesetzt."
+homes.unlimited: "unbegrenzt"
+homes.list.header: "§aDeine Homes (§e{current}§a/§e{max}§a):"
+homes.list.items: "§e{homes}"
+homes.limit.reached: "§cDu hast die maximale Anzahl an Homes ({max}) erreicht."
+homes.limit.set: "§aGlobales Home-Limit auf {max} gesetzt."
+
+# Cooldown-Nachrichten
+cooldown.set: "§aGlobaler Home-Cooldown auf {time} Sekunden gesetzt."
+cooldown.disabled: "§aHome-Cooldown deaktiviert."

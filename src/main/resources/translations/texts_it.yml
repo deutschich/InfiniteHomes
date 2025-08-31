@@ -1,0 +1,30 @@
+# Messaggi generali
+no_permission: "§cNon hai il permesso di usare questo comando."
+invalid_number: "§cPer favore, inserisci un numero valido."
+cooldown.range: "§cIl cooldown deve essere tra -1 e 60 secondi."
+
+# Uso dei comandi
+usage.sethome: "§cUso: /sethome <nome>"
+usage.delhome: "§cUso: /delhome <nome>"
+usage.home: "§cUso: /home <nome>"
+usage.homecount: "§cUso: /homecount <numero>"
+usage.homecooldown: "§cUso: /homecooldown <secondi>"
+
+# Messaggi di home
+home.set: "§aHome '{home}' impostata!"
+home.deleted: "§aHome '{home}' eliminata!"
+home.not_exist: "§cHome '{home}' non esiste."
+home.teleport: "§aTeletrasportato a home '{home}'!"
+home.cooldown: "§cDevi aspettare {time} secondi prima di usare di nuovo /home."
+
+# Lista delle home
+homes.none: "§cNon hai nessuna home impostata."
+homes.unlimited: "illimitato"
+homes.list.header: "§aLe tue home (§e{current}§a/§e{max}§a):"
+homes.list.items: "§e{homes}"
+homes.limit.reached: "§cHai raggiunto il numero massimo di home ({max})."
+homes.limit.set: "§aLimite globale di home impostato a {max}."
+
+# Messaggi di cooldown
+cooldown.set: "§aCooldown globale delle home impostato a {time} secondi."
+cooldown.disabled: "§aCooldown delle home disattivato."

@@ -1,0 +1,30 @@
+# Algemene berichten
+no_permission: "§cJe hebt geen toestemming om dit commando te gebruiken."
+invalid_number: "§cVoer een geldig nummer in."
+cooldown.range: "§cCooldown moet tussen -1 en 60 seconden liggen."
+
+# Gebruik van commando's
+usage.sethome: "§cGebruik: /sethome <naam>"
+usage.delhome: "§cGebruik: /delhome <naam>"
+usage.home: "§cGebruik: /home <naam>"
+usage.homecount: "§cGebruik: /homecount <nummer>"
+usage.homecooldown: "§cGebruik: /homecooldown <seconden>"
+
+# Home berichten
+home.set: "§aHome '{home}' ingesteld!"
+home.deleted: "§aHome '{home}' verwijderd!"
+home.not_exist: "§cHome '{home}' bestaat niet."
+home.teleport: "§aGeteleporteerd naar home '{home}'!"
+home.cooldown: "§cJe moet {time} seconden wachten voordat je /home opnieuw kunt gebruiken."
+
+# Home lijst
+homes.none: "§cJe hebt geen homes ingesteld."
+homes.unlimited: "onbeperkt"
+homes.list.header: "§aJe homes (§e{current}§a/§e{max}§a):"
+homes.list.items: "§e{homes}"
+homes.limit.reached: "§cJe hebt het maximale aantal homes ({max}) bereikt."
+homes.limit.set: "§aGlobale homelimit ingesteld op {max}."
+
+# Cooldown berichten
+cooldown.set: "§aGlobale home cooldown ingesteld op {time} seconden."
+cooldown.disabled: "§aHome cooldown uitgeschakeld."

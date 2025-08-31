@@ -11,6 +11,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -20,17 +23,25 @@ import java.util.logging.Level;
 public class InfiniteHomes extends JavaPlugin {
 
     private Map<UUID, Map<String, Location>> homes;
+    private Map<UUID, Long> cooldowns;
     private FileConfiguration homesConfig;
     private File homesFile;
+    private Map<String, FileConfiguration> translations;
+    private File translationsDir;
 
     @Override
     public void onEnable() {
         homes = new HashMap<>();
+        cooldowns = new HashMap<>();
+        translations = new HashMap<>();
+
         setupHomesConfig();
         loadHomesFromConfig();
+        setupTranslations();
 
         // Standardkonfiguration erstellen, falls nicht vorhanden
         getConfig().addDefault("max-homes", -1);
+        getConfig().addDefault("home-cooldown", -1);
         getConfig().options().copyDefaults(true);
         saveConfig();
 
@@ -59,6 +70,87 @@ public class InfiniteHomes extends JavaPlugin {
         }
 
         homesConfig = YamlConfiguration.loadConfiguration(homesFile);
+    }
+
+    private void setupTranslations() {
+        translationsDir = new File(getDataFolder(), "translations");
+        if (!translationsDir.exists()) {
+            translationsDir.mkdirs();
+        }
+
+        // Standard-Übersetzung (Englisch) aus Ressourcen laden
+        saveResource("translations/texts_en.yml", false);
+
+        // Verfügbare Übersetzungen laden
+        loadTranslations();
+    }
+
+    private void loadTranslations() {
+        translations.clear();
+
+        File[] translationFiles = translationsDir.listFiles((dir, name) ->
+                name.startsWith("texts_") && name.endsWith(".yml"));
+
+        if (translationFiles != null) {
+            for (File file : translationFiles) {
+                try {
+                    String locale = file.getName().replace("texts_", "").replace(".yml", "");
+                    FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+                    translations.put(locale, config);
+                    getLogger().info("Loaded translation: " + locale);
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error loading translation file: " + file.getName(), e);
+                }
+            }
+        }
+
+        // Fallback: Englische Übersetzung aus Ressourcen laden
+        if (!translations.containsKey("en")) {
+            try {
+                InputStream stream = getResource("translations/texts_en.yml");
+                if (stream != null) {
+                    FileConfiguration config = YamlConfiguration.loadConfiguration(
+                            new InputStreamReader(stream, StandardCharsets.UTF_8));
+                    translations.put("en", config);
+                }
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Error loading default English translation", e);
+            }
+        }
+    }
+
+    private String getMessage(Player player, String key) {
+        // Sprache des Clients ermitteln
+        String clientLanguage = player.getLocale().toLowerCase();
+
+        // Sprache auf Standardformat normalisieren (z.B. "de_de" -> "de")
+        String languageCode = clientLanguage.split("_")[0];
+
+        // Passende Übersetzung finden
+        FileConfiguration translation = translations.get(languageCode);
+        if (translation == null) {
+            // Fallback: Englisch
+            translation = translations.get("en");
+            if (translation == null) {
+                return "Translation not found for key: " + key;
+            }
+        }
+
+        // Nachricht aus der Übersetzung holen
+        String message = translation.getString(key);
+        if (message == null || message.isEmpty()) {
+            // Fallback: Englisch
+            FileConfiguration enTranslation = translations.get("en");
+            if (enTranslation != null) {
+                message = enTranslation.getString(key);
+            }
+
+            if (message == null || message.isEmpty()) {
+                return "Message not found: " + key;
+            }
+        }
+
+        return message;
     }
 
     private void loadHomesFromConfig() {
@@ -114,7 +206,7 @@ public class InfiniteHomes extends JavaPlugin {
 
         if (cmd.getName().equalsIgnoreCase("sethome")) {
             if (args.length != 1) {
-                player.sendMessage("Usage: /sethome <name>");
+                player.sendMessage(getMessage(player, "usage.sethome"));
                 return true;
             }
 
@@ -123,7 +215,7 @@ public class InfiniteHomes extends JavaPlugin {
             if (maxHomes != -1) {
                 int currentHomes = homes.containsKey(playerUuid) ? homes.get(playerUuid).size() : 0;
                 if (currentHomes >= maxHomes) {
-                    player.sendMessage("§cYou have reached the maximum number of homes (" + maxHomes + ").");
+                    player.sendMessage(getMessage(player, "homes.limit.reached").replace("{max}", String.valueOf(maxHomes)));
                     return true;
                 }
             }
@@ -135,13 +227,13 @@ public class InfiniteHomes extends JavaPlugin {
 
             homes.get(playerUuid).put(homeName, player.getLocation());
             saveHomesToConfig();
-            player.sendMessage("§aHome '" + homeName + "' set!");
+            player.sendMessage(getMessage(player, "home.set").replace("{home}", homeName));
             return true;
         }
 
         if (cmd.getName().equalsIgnoreCase("delhome")) {
             if (args.length != 1) {
-                player.sendMessage("Usage: /delhome <name>");
+                player.sendMessage(getMessage(player, "usage.delhome"));
                 return true;
             }
 
@@ -149,25 +241,43 @@ public class InfiniteHomes extends JavaPlugin {
             if (homes.containsKey(playerUuid) && homes.get(playerUuid).containsKey(homeName)) {
                 homes.get(playerUuid).remove(homeName);
                 saveHomesToConfig();
-                player.sendMessage("§aHome '" + homeName + "' deleted!");
+                player.sendMessage(getMessage(player, "home.deleted").replace("{home}", homeName));
             } else {
-                player.sendMessage("§cHome '" + homeName + "' does not exist.");
+                player.sendMessage(getMessage(player, "home.not_exist").replace("{home}", homeName));
             }
             return true;
         }
 
         if (cmd.getName().equalsIgnoreCase("home")) {
             if (args.length != 1) {
-                player.sendMessage("Usage: /home <name>");
+                player.sendMessage(getMessage(player, "usage.home"));
                 return true;
+            }
+
+            // Check cooldown
+            int cooldown = getConfig().getInt("home-cooldown", -1);
+            if (cooldown > 0) {
+                long currentTime = System.currentTimeMillis();
+                if (cooldowns.containsKey(playerUuid)) {
+                    long lastUsed = cooldowns.get(playerUuid);
+                    long timeLeft = ((lastUsed / 1000) + cooldown) - (currentTime / 1000);
+
+                    if (timeLeft > 0) {
+                        player.sendMessage(getMessage(player, "home.cooldown").replace("{time}", String.valueOf(timeLeft)));
+                        return true;
+                    }
+                }
+
+                // Set cooldown
+                cooldowns.put(playerUuid, currentTime);
             }
 
             String homeName = args[0].toLowerCase();
             if (homes.containsKey(playerUuid) && homes.get(playerUuid).containsKey(homeName)) {
                 player.teleport(homes.get(playerUuid).get(homeName));
-                player.sendMessage("§aTeleported to home '" + homeName + "'!");
+                player.sendMessage(getMessage(player, "home.teleport").replace("{home}", homeName));
             } else {
-                player.sendMessage("§cHome '" + homeName + "' does not exist.");
+                player.sendMessage(getMessage(player, "home.not_exist").replace("{home}", homeName));
             }
             return true;
         }
@@ -175,7 +285,7 @@ public class InfiniteHomes extends JavaPlugin {
         if (cmd.getName().equalsIgnoreCase("homes")) {
             // List all homes of the player
             if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
-                player.sendMessage("§cYou don't have any homes set.");
+                player.sendMessage(getMessage(player, "homes.none"));
                 return true;
             }
 
@@ -183,30 +293,32 @@ public class InfiniteHomes extends JavaPlugin {
             int maxHomes = getConfig().getInt("max-homes", -1);
             int currentHomes = homeNames.size();
 
-            String limitText = (maxHomes == -1) ? "unlimited" : String.valueOf(maxHomes);
-            player.sendMessage("§aYour homes (§e" + currentHomes + "§a/§e" + limitText + "§a):");
+            String limitText = (maxHomes == -1) ? getMessage(player, "homes.unlimited") : String.valueOf(maxHomes);
+            player.sendMessage(getMessage(player, "homes.list.header")
+                    .replace("{current}", String.valueOf(currentHomes))
+                    .replace("{max}", limitText));
 
             // List all home names
             StringBuilder homesList = new StringBuilder();
             for (String home : homeNames) {
                 if (homesList.length() > 0) {
-                    homesList.append("§a, ");
+                    homesList.append(", ");
                 }
-                homesList.append("§e").append(home);
+                homesList.append(home);
             }
 
-            player.sendMessage(homesList.toString());
+            player.sendMessage(getMessage(player, "homes.list.items").replace("{homes}", homesList.toString()));
             return true;
         }
 
         if (cmd.getName().equalsIgnoreCase("homecount")) {
             if (!player.isOp()) {
-                player.sendMessage("§cYou do not have permission to use this command.");
+                player.sendMessage(getMessage(player, "no_permission"));
                 return true;
             }
 
             if (args.length != 1) {
-                player.sendMessage("Usage: /homecount <number>");
+                player.sendMessage(getMessage(player, "usage.homecount"));
                 return true;
             }
 
@@ -214,9 +326,41 @@ public class InfiniteHomes extends JavaPlugin {
                 int newMax = Integer.parseInt(args[0]);
                 getConfig().set("max-homes", newMax);
                 saveConfig();
-                player.sendMessage("§aGlobal home limit set to " + newMax + ".");
+                player.sendMessage(getMessage(player, "homes.limit.set").replace("{max}", String.valueOf(newMax)));
             } catch (NumberFormatException e) {
-                player.sendMessage("§cPlease provide a valid number.");
+                player.sendMessage(getMessage(player, "invalid_number"));
+            }
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("homecooldown")) {
+            if (!player.isOp()) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+
+            if (args.length != 1) {
+                player.sendMessage(getMessage(player, "usage.homecooldown"));
+                return true;
+            }
+
+            try {
+                int cooldown = Integer.parseInt(args[0]);
+                if (cooldown < -1 || cooldown > 60) {
+                    player.sendMessage(getMessage(player, "cooldown.range"));
+                    return true;
+                }
+
+                getConfig().set("home-cooldown", cooldown);
+                saveConfig();
+
+                if (cooldown == -1) {
+                    player.sendMessage(getMessage(player, "cooldown.disabled"));
+                } else {
+                    player.sendMessage(getMessage(player, "cooldown.set").replace("{time}", String.valueOf(cooldown)));
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(getMessage(player, "invalid_number"));
             }
             return true;
         }

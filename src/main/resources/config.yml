@@ -1,2 +1,5 @@
-# Default home limit (-1 = unlimited)
+# Home-Limit Configuration
 max-homes: -1
+
+# Home-Cooldown in seconds (-1 um to disable)
+home-cooldown: -1
