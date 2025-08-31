@@ -1,6 +1,6 @@
 name: InfiniteHomes
 version: 1.0.1
-main: com.user404.infinitehomes.InfiniteHomes
+main: com.user404_.infinitehomes.InfiniteHomes
 api-version: 1.16
 commands:
   sethome:
