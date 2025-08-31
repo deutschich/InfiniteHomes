@@ -1,0 +1,2 @@
+# Default home limit (-1 = unlimited)
+max-homes: -1
