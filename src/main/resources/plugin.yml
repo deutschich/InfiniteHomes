@@ -10,12 +10,15 @@ commands:
   delhome:
     description: Delete a home with the given name.
     usage: /delhome <name>
+    aliases: [deletehome]
   home:
     description: Teleport to a home with the given name.
     usage: /home <name>
+    aliases: [h]
   homes:
     description: List all your homes.
     usage: /homes
+    aliases: [listhomes]
   homecount:
     description: Set the global home limit (OP only).
     usage: /homecount <number>

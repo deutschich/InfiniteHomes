@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -14,13 +15,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class InfiniteHomes extends JavaPlugin {
+public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
     private Map<UUID, Map<String, Location>> homes;
     private Map<UUID, Long> cooldowns;
@@ -45,6 +48,10 @@ public class InfiniteHomes extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
 
+        // TabCompleter registrieren
+        getCommand("home").setTabCompleter(this);
+        getCommand("delhome").setTabCompleter(this);
+
         getLogger().info("InfiniteHomes plugin enabled!");
     }
 
@@ -52,6 +59,43 @@ public class InfiniteHomes extends JavaPlugin {
     public void onDisable() {
         saveHomesToConfig();
         getLogger().info("InfiniteHomes plugin disabled!");
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        // Nur für Spieler und für die Befehle home und delhome
+        if (!(sender instanceof Player) || (!command.getName().equalsIgnoreCase("home") &&
+                !command.getName().equalsIgnoreCase("delhome"))) {
+            return completions;
+        }
+
+        Player player = (Player) sender;
+        UUID playerUuid = player.getUniqueId();
+
+        // Wenn der Spieler keine Homes hat, leere Liste zurückgeben
+        if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
+            return completions;
+        }
+
+        // Home-Namen des Spielers holen
+        Set<String> homeNames = homes.get(playerUuid).keySet();
+
+        // Wenn kein Argument vorhanden ist, alle Home-Namen zurückgeben
+        if (args.length == 0 || args[0].isEmpty()) {
+            completions.addAll(homeNames);
+        } else {
+            // Home-Namen filtern, die mit dem eingegebenen Text beginnen
+            String input = args[0].toLowerCase();
+            for (String home : homeNames) {
+                if (home.toLowerCase().startsWith(input)) {
+                    completions.add(home);
+                }
+            }
+        }
+
+        return completions;
     }
 
     private void setupHomesConfig() {
