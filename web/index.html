@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfiniteHomes - Minecraft Plugin</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2E7D32;
+            --accent-color: #8BC34A;
+            --dark-color: #1B5E20;
+            --light-color: #F1F8E9;
+            --text-dark: #212121;
+            --text-light: #757575;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+        
+        .hero {
+            background: url('https://via.placeholder.com/1500x500') no-repeat center center/cover;
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--dark-color);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .commands {
+            background-color: var(--light-color);
+        }
+        
+        .command-list {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .command-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .command-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .command-name {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .command-desc {
+            margin-top: 0.5rem;
+            color: var(--text-light);
+        }
+        
+        .download-platforms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .platform-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .platform-logo {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .screenshot-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .screenshot-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .screenshot-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .faq-item {
+            margin-bottom: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .faq-question {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+        
+        .copyright {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            
+            .nav-links li {
+                margin: 0.5rem 0;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">InfiniteHomes</div>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#commands">Commands</a></li>
+                    <li><a href="#download">Download</a></li>
+                    <li><a href="#screenshots">Screenshots</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>InfiniteHomes Minecraft Plugin</h1>
+                <p>Unbegrenzte oder kontrollierbare Homes für deine Spieler! Leichtgewichtig, einfach zu bedienen und perfekt für jeden Survival- oder Freebuild-Server.</p>
+                <a href="#download" class="btn">Jetzt herunterladen</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Plugin-Features</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Unbegrenzte Homes</h3>
+                    <p>Spieler können standardmäßig so viele Homes setzen, wie sie möchten - oder du als Serverbetreiber legst fest, wie viele Homes erlaubt sind.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Einfache Konfiguration</h3>
+                    <p>Keine Datenbank erforderlich! Einfach installieren und loslegen. Perfekt für kleine und große Server.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Multilingual Support</h3>
+                    <p>Unterstützung für mehrere Sprachen durch benutzerdefinierte Textdateien. Einfache Anpassung aller Plugin-Nachrichten.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Cooldown-System</h3>
+                    <p>Konfigurierbare Cooldowns zwischen Teleportationen, um Missbrauch zu verhindern.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Leistungsoptimiert</h3>
+                    <p>Leichtgewichtiges Plugin, das keine Serverressourcen überlastet und selbst auf großen Servern reibungslos läuft.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Permissions</h3>
+                    <p>Vollständige Integration mit Permission-Systemen, um differentierte Zugriffsrechte zu verwalten.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="commands" class="commands">
+        <div class="container">
+            <h2 class="section-title">Befehle</h2>
+            <div class="command-list">
+                <div class="command-item">
+                    <div class="command-name">/sethome &lt;name&gt;</div>
+                    <div class="command-desc">Setzt ein Home mit einem benutzerdefinierten Namen</div>
+                </div>
+                <div class="command-item">
+                    <div class="command-name">/home &lt;name&gt;</div>
+                    <div class="command-desc">Teleportiert dich zu deinem Home</div>
+                </div>
+                <div class="command-item">
+                    <div class="command-name">/delhome &lt;name&gt;</div>
+                    <div class="command-desc">Löscht ein Home</div>
+                </div>
+                <div class="command-item">
+                    <div class="command-name">/homes</div>
+                    <div class="command-desc">Listet alle Homes des aktuellen Benutzers auf</div>
+                </div>
+                <div class="command-item">
+                    <div class="command-name">/homecooldown &lt;number/-1&gt;</div>
+                    <div class="command-desc">Setzt den Cooldown zwischen Teleports (OP only, -1 = kein Cooldown)</div>
+                </div>
+                <div class="command-item">
+                    <div class="command-name">/homecount &lt;number/-1&gt;</div>
+                    <div class="command-desc">Setzt die maximale Anzahl von Homes (OP only, -1 = unbegrenzt)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="download">
+        <div class="container">
+            <h2 class="section-title">Download & Links</h2>
+            <p style="text-align: center; margin-bottom: 2rem;">Lade das InfiniteHomes Plugin von diesen Plattformen herunter:</p>
+            
+            <div class="download-platforms">
+                <div class="platform-card">
+                    <div class="platform-logo">🔗</div>
+                    <h3>SpigotMC</h3>
+                    <p>Download für Spigot und Bukkit Server</p>
+                    <a href="#" class="btn">Zum Download</a>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-logo">🔗</div>
+                    <h3>Modrinth</h3>
+                    <p>Download auf Modrinth</p>
+                    <a href="#" class="btn">Zum Download</a>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-logo">🔗</div>
+                    <h3>GitHub</h3>
+                    <p>Quellcode auf GitHub</p>
+                    <a href="#" class="btn">Zum Repository</a>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-logo">🔗</div>
+                    <h3>PaperMC Hangar</h3>
+                    <p>Download auf PaperMC Hangar</p>
+                    <a href="#" class="btn">Zum Download</a>
+                </div>
+            </div>
+            
+            <div style="margin-top: 3rem; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Installationsanleitung</h3>
+                <ol style="padding-left: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;">Lade die neueste Version des Plugins von einer der Plattformen herunter</li>
+                    <li style="margin-bottom: 0.5rem;">Füge die JAR-Datei in den Plugins-Ordner deines Minecraft-Servers ein</li>
+                    <li style="margin-bottom: 0.5rem;">Starte den Server neu, um das Plugin zu laden</li>
+                    <li style="margin-bottom: 0.5rem;">Passe die Konfiguration in der generierten Config-Datei nach Bedarf an</li>
+                    <li>Füge benutzerdefinierte Übersetzungen im /plugins/Infinitehomes/translations/ Ordner hinzu</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <section id="screenshots">
+        <div class="container">
+            <h2 class="section-title">Screenshots</h2>
+            <p style="text-align: center; margin-bottom: 2rem;">(Platzhalter für zukünftige Screenshots)</p>
+            
+            <div class="screenshot-gallery">
+                <div class="screenshot-item">
+                    <img src="https://via.placeholder.com/600x400" alt="InfiniteHomes Screenshot 1">
+                </div>
+                <div class="screenshot-item">
+                    <img src="https://via.placeholder.com/600x400" alt="InfiniteHomes Screenshot 2">
+                </div>
+                <div class="screenshot-item">
+                    <img src="https://via.placeholder.com/600x400" alt="InfiniteHomes Screenshot 3">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="commands">
+        <div class="container">
+            <h2 class="section-title">Häufig gestellte Fragen</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">Wie installiere ich das InfiniteHomes Plugin?</div>
+                <div class="faq-answer">Lade die JAR-Datei herunter, lege sie in den Plugins-Ordner deines Servers und starte den Server neu. Das Plugin generiert automatisch eine Config-Datei, die du nach deinen Wünschen anpassen kannst.</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Unterstützt das Plugin mehrere Sprachen?</div>
+                <div class="faq-answer">Ja, das Plugin unterstützt mehrere Sprachen. Du kannst benutzerdefinierte Übersetzungen im /plugins/Infinitehomes/translations/ Ordner hinzufügen, z.B. texts_de.yml für Deutsch.</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Kann ich die maximale Anzahl von Homes pro Spieler begrenzen?</div>
+                <div class="faq-answer">Ja, als Serveroperator kannst du mit /homecount &lt;number&gt; die maximale Anzahl von Homes festlegen. Verwende -1 für unbegrenzte Homes.</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Ist eine Datenbank für dieses Plugin erforderlich?</div>
+                <div class="faq-answer">Nein, das Plugin ist leichtgewichtig und benötigt keine Datenbank. Alle Daten werden in lokalen Dateien gespeichert.</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Kann ich Cooldowns für Teleports festlegen?</div>
+                <div class="faq-answer">Ja, du kannst mit /homecooldown &lt;seconds&gt; einen Cooldown zwischen Teleportationen festlegen. Verwende -1, um Cooldowns zu deaktivieren.</div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>InfiniteHomes</h3>
+                    <p>Ein leistungsstarkes Home-Plugin für Minecraft-Server.</p>
+                </div>
+                <div>
+                    <h3>Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#commands">Commands</a></li>
+                        <li><a href="#download">Download</a></li>
+                        <li><a href="#screenshots">Screenshots</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Externe Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">SpigotMC</a></li>
+                        <li><a href="#">Modrinth</a></li>
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">PaperMC Hangar</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 InfiniteHomes Plugin. Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
