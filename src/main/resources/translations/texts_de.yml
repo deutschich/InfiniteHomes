@@ -1,31 +1,47 @@
-# InfiniteHomes - Deutsche Übersetzung
+# InfiniteHomes - Übersetzungsdatei
+# Du kannst Übersetzungen für verschiedene Sprachen im translations-Ordner erstellen
+# Benenne die Dateien texts_[lang].yml (z. B. texts_de.yml für Deutsch)
 
 # Allgemeine Nachrichten
 no_permission: "§cDu hast keine Berechtigung, diesen Befehl zu verwenden."
 invalid_number: "§cBitte gib eine gültige Zahl ein."
-cooldown.range: "§cCooldown muss zwischen -1 und 60 Sekunden liegen."
+cooldown.range: "§cDer Cooldown muss zwischen -1 und 60 Sekunden liegen."
 
-# Befehlsverwendung
-usage.sethome: "§cVerwendung: /sethome <Name>"
-usage.delhome: "§cVerwendung: /delhome <Name>"
-usage.home: "§cVerwendung: /home <Name>"
-usage.homecount: "§cVerwendung: /homecount <Zahl>"
-usage.homecooldown: "§cVerwendung: /homecooldown <Sekunden>"
+# Befehlsnutzung
+usage.sethome: "§cBenutzung: /sethome <Name>"
+usage.delhome: "§cBenutzung: /delhome <Name>"
+usage.home: "§cBenutzung: /home <Name>"
+usage.homecount: "§cBenutzung: /homecount <Zahl>"
+usage.homecooldown: "§cBenutzung: /homecooldown <Sekunden>"
+usage.setglobalhome: "§cBenutzung: /setglobalhome <Name>"
+usage.globalhome: "§cBenutzung: /globalhome <Name>"
+usage.delglobalhome: "§cBenutzung: /delglobalhome <Name>"
 
 # Home-Nachrichten
 home.set: "§aHome '{home}' gesetzt!"
 home.deleted: "§aHome '{home}' gelöscht!"
 home.not_exist: "§cHome '{home}' existiert nicht."
-home.teleport: "§aZu Home '{home}' teleportiert!"
-home.cooldown: "§cDu musst {time} Sekunden warten, bevor du /home wieder verwenden kannst."
+home.teleport: "§aTeleportiert zum Home '{home}'!"
+home.cooldown: "§cDu musst {time} Sekunden warten, bevor du /home erneut verwenden kannst."
+
+# Globale Home-Nachrichten
+globalhome.set: "§aGlobales Home '{home}' gesetzt!"
+globalhome.deleted: "§aGlobales Home '{home}' gelöscht!"
+globalhome.not_exist: "§cGlobales Home '{home}' existiert nicht."
+globalhome.teleport: "§aTeleportiert zum globalen Home '{home}'!"
 
 # Home-Liste Nachrichten
 homes.none: "§cDu hast keine Homes gesetzt."
 homes.unlimited: "unbegrenzt"
 homes.list.header: "§aDeine Homes (§e{current}§a/§e{max}§a):"
 homes.list.items: "§e{homes}"
-homes.limit.reached: "§cDu hast die maximale Anzahl an Homes ({max}) erreicht."
+homes.limit.reached: "§cDu hast die maximale Anzahl an Homes erreicht ({max})."
 homes.limit.set: "§aGlobales Home-Limit auf {max} gesetzt."
+
+# Globale Home-Liste Nachrichten
+globalhomes.none: "§cEs sind keine globalen Homes gesetzt."
+globalhomes.list.header: "§aVerfügbare globale Homes:"
+globalhomes.list.items: "§e{homes}"
 
 # Cooldown-Nachrichten
 cooldown.set: "§aGlobaler Home-Cooldown auf {time} Sekunden gesetzt."

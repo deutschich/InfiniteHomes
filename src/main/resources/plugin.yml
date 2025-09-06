@@ -1,7 +1,7 @@
-name: InfiniteHomes
-version: 1.1
+name: InfiniteHomesPLUS
+version: 1.2+
 main: com.user404_.infinitehomes.InfiniteHomes
-website: https://www.spigotmc.org/resources/infinitehomes-unlimited-or-configurable-homes-system.128492/
+website: https://github.com/deutschich/InfiniteHomes/tree/%2B
 api-version: 1.21
 commands:
   sethome:
@@ -25,3 +25,19 @@ commands:
   homecooldown:
     description: Set the global home cooldown (OP only).
     usage: /homecooldown <seconds>
+  setglobalhome:
+    description: Set a global home accessible to all players (OP only)
+    usage: /setglobalhome <name>
+    aliases: [sgh]
+  globalhome:
+    description: Teleport to a global home
+    usage: /globalhome <name>
+    aliases: [gh]
+  globalhomes:
+    description: List all global homes
+    usage: /globalhomes
+    aliases: [listglobalhomes]
+  delglobalhome:
+    description: Delete a global home (OP only)
+    usage: /delglobalhome <name>
+    aliases: [deleteglobalhome, dgh]

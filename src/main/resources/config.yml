@@ -1,5 +1,8 @@
 # Home-Limit Configuration
 max-homes: -1
 
-# Home-Cooldown in seconds (-1 um to disable)
+# Home-Cooldown in seconds (-1 to disable)
 home-cooldown: -1
+
+# Global homes storage setting
+global-homes: {}

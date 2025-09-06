@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -26,20 +27,26 @@ import java.util.logging.Level;
 public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
     private Map<UUID, Map<String, Location>> homes;
+    private Map<String, Location> globalHomes;
     private Map<UUID, Long> cooldowns;
     private FileConfiguration homesConfig;
     private File homesFile;
+    private FileConfiguration globalHomesConfig;
+    private File globalHomesFile;
     private Map<String, FileConfiguration> translations;
     private File translationsDir;
 
     @Override
     public void onEnable() {
         homes = new HashMap<>();
+        globalHomes = new HashMap<>();
         cooldowns = new HashMap<>();
         translations = new HashMap<>();
 
         setupHomesConfig();
+        setupGlobalHomesConfig();
         loadHomesFromConfig();
+        loadGlobalHomesFromConfig();
         setupTranslations();
 
         // Standardkonfiguration erstellen, falls nicht vorhanden
@@ -51,6 +58,8 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         // TabCompleter registrieren
         getCommand("home").setTabCompleter(this);
         getCommand("delhome").setTabCompleter(this);
+        getCommand("globalhome").setTabCompleter(this);
+        getCommand("delglobalhome").setTabCompleter(this);
 
         getLogger().info("InfiniteHomes plugin enabled!");
     }
@@ -58,6 +67,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
     @Override
     public void onDisable() {
         saveHomesToConfig();
+        saveGlobalHomesToConfig();
         getLogger().info("InfiniteHomes plugin disabled!");
     }
 
@@ -65,32 +75,57 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
 
-        // Nur für Spieler und für die Befehle home und delhome
+        // Nur für Spieler und für die Befehle home, delhome, globalhome und delglobalhome
         if (!(sender instanceof Player) || (!command.getName().equalsIgnoreCase("home") &&
-                !command.getName().equalsIgnoreCase("delhome"))) {
+                !command.getName().equalsIgnoreCase("delhome") &&
+                !command.getName().equalsIgnoreCase("globalhome") &&
+                !command.getName().equalsIgnoreCase("delglobalhome"))) {
             return completions;
         }
 
         Player player = (Player) sender;
-        UUID playerUuid = player.getUniqueId();
 
-        // Wenn der Spieler keine Homes hat, leere Liste zurückgeben
-        if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
-            return completions;
-        }
+        if (command.getName().equalsIgnoreCase("home") || command.getName().equalsIgnoreCase("delhome")) {
+            // Home-Namen des Spielers holen
+            UUID playerUuid = player.getUniqueId();
 
-        // Home-Namen des Spielers holen
-        Set<String> homeNames = homes.get(playerUuid).keySet();
+            // Wenn der Spieler keine Homes hat, leere Liste zurückgeben
+            if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
+                return completions;
+            }
 
-        // Wenn kein Argument vorhanden ist, alle Home-Namen zurückgeben
-        if (args.length == 0 || args[0].isEmpty()) {
-            completions.addAll(homeNames);
-        } else {
-            // Home-Namen filtern, die mit dem eingegebenen Text beginnen
-            String input = args[0].toLowerCase();
-            for (String home : homeNames) {
-                if (home.toLowerCase().startsWith(input)) {
-                    completions.add(home);
+            Set<String> homeNames = homes.get(playerUuid).keySet();
+
+            // Wenn kein Argument vorhanden ist, alle Home-Namen zurückgeben
+            if (args.length == 0 || args[0].isEmpty()) {
+                completions.addAll(homeNames);
+            } else {
+                // Home-Namen filtern, die mit dem eingegebenen Text beginnen
+                String input = args[0].toLowerCase();
+                for (String home : homeNames) {
+                    if (home.toLowerCase().startsWith(input)) {
+                        completions.add(home);
+                    }
+                }
+            }
+        } else if (command.getName().equalsIgnoreCase("globalhome") || command.getName().equalsIgnoreCase("delglobalhome")) {
+            // Globale Home-Namen holen
+            if (globalHomes.isEmpty()) {
+                return completions;
+            }
+
+            Set<String> globalHomeNames = globalHomes.keySet();
+
+            // Wenn kein Argument vorhanden ist, alle globalen Home-Namen zurückgeben
+            if (args.length == 0 || args[0].isEmpty()) {
+                completions.addAll(globalHomeNames);
+            } else {
+                // Globale Home-Namen filtern, die mit dem eingegebenen Text beginnen
+                String input = args[0].toLowerCase();
+                for (String home : globalHomeNames) {
+                    if (home.toLowerCase().startsWith(input)) {
+                        completions.add(home);
+                    }
                 }
             }
         }
@@ -114,6 +149,24 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
 
         homesConfig = YamlConfiguration.loadConfiguration(homesFile);
+    }
+
+    private void setupGlobalHomesConfig() {
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
+        globalHomesFile = new File(getDataFolder(), "globalhomes.yml");
+
+        if (!globalHomesFile.exists()) {
+            try {
+                globalHomesFile.createNewFile();
+            } catch (IOException e) {
+                getLogger().log(Level.SEVERE, "Could not create globalhomes.yml", e);
+            }
+        }
+
+        globalHomesConfig = YamlConfiguration.loadConfiguration(globalHomesFile);
     }
 
     private void setupTranslations() {
@@ -235,6 +288,38 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
             homesConfig.save(homesFile);
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, "Could not save homes to config", e);
+        }
+    }
+
+    private void loadGlobalHomesFromConfig() {
+        try {
+            globalHomes.clear();
+            for (String homeName : globalHomesConfig.getKeys(false)) {
+                Location location = (Location) globalHomesConfig.get(homeName);
+                if (location != null) {
+                    globalHomes.put(homeName, location);
+                }
+            }
+        } catch (Exception e) {
+            getLogger().log(Level.WARNING, "Error loading global homes from config", e);
+        }
+    }
+
+    private void saveGlobalHomesToConfig() {
+        try {
+            // Clear existing data
+            for (String key : globalHomesConfig.getKeys(false)) {
+                globalHomesConfig.set(key, null);
+            }
+
+            // Save all global homes
+            for (Map.Entry<String, Location> entry : globalHomes.entrySet()) {
+                globalHomesConfig.set(entry.getKey(), entry.getValue());
+            }
+
+            globalHomesConfig.save(globalHomesFile);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not save global homes to config", e);
         }
     }
 
@@ -405,6 +490,83 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
                 }
             } catch (NumberFormatException e) {
                 player.sendMessage(getMessage(player, "invalid_number"));
+            }
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("setglobalhome")) {
+            if (!player.isOp()) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+
+            if (args.length != 1) {
+                player.sendMessage(getMessage(player, "usage.setglobalhome"));
+                return true;
+            }
+
+            String homeName = args[0].toLowerCase();
+            globalHomes.put(homeName, player.getLocation());
+            saveGlobalHomesToConfig(); // Sofort speichern
+            player.sendMessage(getMessage(player, "globalhome.set").replace("{home}", homeName));
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("globalhome")) {
+            if (args.length != 1) {
+                player.sendMessage(getMessage(player, "usage.globalhome"));
+                return true;
+            }
+
+            String homeName = args[0].toLowerCase();
+            if (globalHomes.containsKey(homeName)) {
+                player.teleport(globalHomes.get(homeName));
+                player.sendMessage(getMessage(player, "globalhome.teleport").replace("{home}", homeName));
+            } else {
+                player.sendMessage(getMessage(player, "globalhome.not_exist").replace("{home}", homeName));
+            }
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("globalhomes")) {
+            if (globalHomes.isEmpty()) {
+                player.sendMessage(getMessage(player, "globalhomes.none"));
+                return true;
+            }
+
+            Set<String> homeNames = globalHomes.keySet();
+            player.sendMessage(getMessage(player, "globalhomes.list.header"));
+
+            StringBuilder homesList = new StringBuilder();
+            for (String home : homeNames) {
+                if (homesList.length() > 0) {
+                    homesList.append(", ");
+                }
+                homesList.append(home);
+            }
+
+            player.sendMessage(getMessage(player, "globalhomes.list.items").replace("{homes}", homesList.toString()));
+            return true;
+        }
+
+        if (cmd.getName().equalsIgnoreCase("delglobalhome") || cmd.getName().equalsIgnoreCase("dgh")) {
+            if (!player.isOp()) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+
+            if (args.length != 1) {
+                player.sendMessage(getMessage(player, "usage.delglobalhome"));
+                return true;
+            }
+
+            String homeName = args[0].toLowerCase();
+            if (globalHomes.containsKey(homeName)) {
+                globalHomes.remove(homeName);
+                saveGlobalHomesToConfig(); // Sofort speichern
+                player.sendMessage(getMessage(player, "globalhome.deleted").replace("{home}", homeName));
+            } else {
+                player.sendMessage(getMessage(player, "globalhome.not_exist").replace("{home}", homeName));
             }
             return true;
         }

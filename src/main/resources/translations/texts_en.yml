@@ -1,4 +1,6 @@
-# InfiniteHomes - English Translation
+# InfiniteHomes - Translation File
+# You can create translations for different languages in the translations folder
+# Name the files texts_[lang].yml (e.g., texts_de.yml for German)
 
 # General messages
 no_permission: "§cYou don't have permission to use this command."
@@ -11,6 +13,9 @@ usage.delhome: "§cUsage: /delhome <name>"
 usage.home: "§cUsage: /home <name>"
 usage.homecount: "§cUsage: /homecount <number>"
 usage.homecooldown: "§cUsage: /homecooldown <seconds>"
+usage.setglobalhome: "§cUsage: /setglobalhome <name>"
+usage.globalhome: "§cUsage: /globalhome <name>"
+usage.delglobalhome: "§cUsage: /delglobalhome <name>"
 
 # Home messages
 home.set: "§aHome '{home}' set!"
@@ -19,6 +24,12 @@ home.not_exist: "§cHome '{home}' does not exist."
 home.teleport: "§aTeleported to home '{home}'!"
 home.cooldown: "§cYou must wait {time} seconds before using /home again."
 
+# Global home messages
+globalhome.set: "§aGlobal home '{home}' set!"
+globalhome.deleted: "§aGlobal home '{home}' deleted!"
+globalhome.not_exist: "§cGlobal home '{home}' does not exist."
+globalhome.teleport: "§aTeleported to global home '{home}'!"
+
 # Homes list messages
 homes.none: "§cYou don't have any homes set."
 homes.unlimited: "unlimited"
@@ -26,6 +37,11 @@ homes.list.header: "§aYour homes (§e{current}§a/§e{max}§a):"
 homes.list.items: "§e{homes}"
 homes.limit.reached: "§cYou have reached the maximum number of homes ({max})."
 homes.limit.set: "§aGlobal home limit set to {max}."
+
+# Global homes list messages
+globalhomes.none: "§cThere are no global homes set."
+globalhomes.list.header: "§aAvailable global homes:"
+globalhomes.list.items: "§e{homes}"
 
 # Cooldown messages
 cooldown.set: "§aGlobal home cooldown set to {time} seconds."

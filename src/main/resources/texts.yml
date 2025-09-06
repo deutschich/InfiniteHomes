@@ -32,3 +32,12 @@ homes.limit.set: "§aGlobal home limit set to {max}."
 # Cooldown messages
 cooldown.set: "§aGlobal home cooldown set to {time} seconds."
 cooldown.disabled: "§aHome cooldown disabled."
+
+# Global home messages
+globalhome.set: "§aGlobal home '{home}' set!"
+globalhome.not_exist: "§cGlobal home '{home}' does not exist."
+globalhome.teleport: "§aTeleported to global home '{home}'!"
+globalhome.list.header: "§aAvailable global homes:"
+globalhome.list.items: "§e{homes}"
+usage.setglobalhome: "§cUsage: /setglobalhome <name>"
+usage.globalhome: "§cUsage: /globalhome <name>"

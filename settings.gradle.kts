@@ -1,1 +1,1 @@
-rootProject.name = "InfiniteHomes"
+rootProject.name = "InfiniteHomes+"
