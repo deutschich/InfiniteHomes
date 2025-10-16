@@ -123,7 +123,14 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
 
         // Standard-Übersetzung (Englisch) aus Ressourcen laden
-        saveResource("translations/texts_en.yml", false);
+        saveResource("translations/texts_en.yml", true);
+        saveResource("translations/texts_de.yml", true);
+        saveResource("translations/texts_es.yml", true);
+        saveResource("translations/texts_fr.yml", true);
+        saveResource("translations/texts_it.yml", true);
+        saveResource("translations/texts_nl.yml", true);
+        saveResource("translations/texts_pt.yml", true);
+        saveResource("translations/texts_ru.yml", true);
 
         // Verfügbare Übersetzungen laden
         loadTranslations();
