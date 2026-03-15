@@ -1,7 +1,7 @@
 name: InfiniteHomes
 version: 1.2
 main: com.user404_.infinitehomes.InfiniteHomes
-website: https://www.spigotmc.org/resources/infinitehomes-unlimited-or-configurable-homes-system.128492/
+website: https://modrinth.com/project/XMQtfIwI
 api-version: 1.21
 commands:
   sethome:
