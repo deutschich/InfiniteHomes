@@ -28,3 +28,12 @@ homes.limit.set: "§aГлобальный лимит домов установл
 # Сообщения о перезарядке
 cooldown.set: "§aГлобальный таймер восстановления домов установлен на {time} секунд."
 cooldown.disabled: "§aПерезарядка домов отключена."
+
+# Teleport warmup messages
+teleport.delayed: "§aТелепортация к '{home}' через {time} секунд. {cancelMessage}"
+teleport.cancel_on_move: "§cНе двигайтесь!"
+teleport.cancelled-m: "§cТелепортация отменена, потому что вы {reason}."
+teleport.cancelled.move: "двинулись"
+teleport.cancelled.damage: "получили урон"
+teleport.setup: "§aЗадержка телепортации установлена на {time} секунд. Отмена при движении: {cancel}"
+teleport.set.disabled: "§aЗадержка телепортации отключена."

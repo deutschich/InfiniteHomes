@@ -145,8 +145,8 @@ public class HomeListGUI implements InventoryHolder {
                         cooldowns.put(player.getUniqueId(), currentTime);
                     }
                 }
-                player.teleport(data.getLocation());
-                player.sendMessage(plugin.getMessage(player, "home.teleport").replace("{home}", homeName));
+                // NEW: Use TeleportManager
+                plugin.getTeleportManager().requestTeleport(player, homeName, data.getLocation());
                 player.closeInventory();
             } else if (event.isRightClick() && !event.isShiftClick()) {
                 // Delete confirmation

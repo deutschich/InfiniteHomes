@@ -24,16 +24,63 @@ public class IconSelectionGUI implements InventoryHolder {
 
     // A set of common materials for icons (updated for 1.21)
     private static final List<Material> ICONS = Arrays.asList(
-            Material.RED_BED, Material.DIAMOND, Material.EMERALD, Material.GOLD_INGOT,
-            Material.IRON_INGOT, Material.NETHERITE_INGOT, Material.OAK_LOG,
-            Material.STONE, Material.GRASS_BLOCK, Material.DIRT, Material.COBBLESTONE,
-            Material.OAK_PLANKS, Material.BRICK, Material.BOOKSHELF, Material.CHEST,
-            Material.FURNACE, Material.CRAFTING_TABLE, Material.ENCHANTING_TABLE,
-            Material.ANVIL, Material.BEACON, Material.ENDER_CHEST, Material.SPAWNER,
-            Material.DRAGON_EGG, Material.TOTEM_OF_UNDYING, Material.HEART_OF_THE_SEA,
-            Material.NAUTILUS_SHELL, Material.TURTLE_SCUTE, Material.PHANTOM_MEMBRANE,
-            Material.FEATHER, Material.ARROW, Material.BOW, Material.CROSSBOW,
-            Material.TRIDENT, Material.SHIELD, Material.ELYTRA, Material.FIREWORK_ROCKET
+            // 🏠 Base / Haus
+            Material.RED_BED,
+            Material.OAK_DOOR,
+            Material.CHEST,
+            Material.BARREL,
+            Material.LANTERN,
+            Material.FLOWER_POT,
+
+            // ⛏ Mining
+            Material.IRON_PICKAXE,
+            Material.DIAMOND_PICKAXE,
+            Material.NETHERITE_PICKAXE,
+            Material.COAL,
+            Material.RAW_IRON,
+            Material.RAW_GOLD,
+            Material.DIAMOND,
+            Material.EMERALD,
+
+            // 🌾 Farm
+            Material.WHEAT,
+            Material.CARROT,
+            Material.POTATO,
+            Material.HAY_BLOCK,
+            Material.BAMBOO,
+            Material.HONEY_BOTTLE,
+
+            // 🌲 Nature
+            Material.OAK_SAPLING,
+            Material.OAK_LOG,
+            Material.GRASS_BLOCK,
+            Material.MOSS_BLOCK,
+            Material.VINE,
+
+            // ⚔ PvP / Kampf
+            Material.DIAMOND_SWORD,
+            Material.SHIELD,
+            Material.BOW,
+            Material.ARROW,
+            Material.CROSSBOW,
+            Material.TRIDENT,
+            Material.TOTEM_OF_UNDYING,
+
+            // 🧭 Travel
+            Material.COMPASS,
+            Material.RECOVERY_COMPASS,
+            Material.MAP,
+            Material.ENDER_PEARL,
+            Material.ENDER_EYE,
+            Material.ELYTRA,
+            Material.FIREWORK_ROCKET,
+
+            // ✨ Endgame / Magic
+            Material.ENCHANTED_BOOK,
+            Material.BEACON,
+            Material.DRAGON_EGG,
+            Material.NETHER_STAR,
+            Material.ENDER_CHEST
     );
 
     public IconSelectionGUI(InfiniteHomes plugin, Player viewer, UUID targetUUID, String homeName, boolean admin, int returnPage) {

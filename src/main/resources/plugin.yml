@@ -29,6 +29,14 @@ commands:
     description: Admin command to manage other players' homes.
     usage: /homeadmin <player>
     permission: infinitehomes.admin
+  htp:
+    description: Set teleport warmup delay (admin).
+    usage: /htp <seconds> [true|false]
+    permission: infinitehomes.admin
+  htpc:
+    description: Alias for /htp
+    usage: /htpc <seconds> [true|false]
+    permission: infinitehomes.admin
 
 permissions:
   infinitehomes.admin:
