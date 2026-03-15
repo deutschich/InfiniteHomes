@@ -1,5 +1,11 @@
 # Home-Limit Configuration
 max-homes: -1
 
-# Home-Cooldown in seconds (-1 um to disable)
+# Home-Cooldown in seconds (-1 to disable)
 home-cooldown: -1
+
+# Teleport warmup delay in seconds (-1 to disable)
+teleport-delay: -1
+
+# Whether teleport should be cancelled if player moves or takes damage
+teleport-delay-cancel-on-move: true

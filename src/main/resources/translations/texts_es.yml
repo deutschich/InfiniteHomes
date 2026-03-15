@@ -28,3 +28,12 @@ homes.limit.set: "§aLímite global de homes establecido a {max}."
 # Mensajes de cooldown
 cooldown.set: "§aCooldown global de homes establecido a {time} segundos."
 cooldown.disabled: "§aCooldown de homes desactivado."
+
+# Teleport warmup messages
+teleport.delayed: "§aTeletransportando a '{home}' en {time} segundos. {cancelMessage}"
+teleport.cancel_on_move: "§c¡No te muevas!"
+teleport.cancelled-m: "§cTeletransporte cancelado porque {reason}."
+teleport.cancelled.move: "te moviste"
+teleport.cancelled.damage: "recibiste daño"
+teleport.setup: "§aRetraso de teletransporte establecido a {time} segundos. Cancelar al moverse: {cancel}"
+teleport.set.disabled: "§aRetraso de teletransporte desactivado."

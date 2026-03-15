@@ -1,7 +1,7 @@
 name: InfiniteHomes
-version: 1.1
+version: 1.2
 main: com.user404_.infinitehomes.InfiniteHomes
-website: https://www.spigotmc.org/resources/infinitehomes-unlimited-or-configurable-homes-system.128492/
+website: https://modrinth.com/project/XMQtfIwI
 api-version: 1.21
 commands:
   sethome:
@@ -25,3 +25,20 @@ commands:
   homecooldown:
     description: Set the global home cooldown (OP only).
     usage: /homecooldown <seconds>
+  homeadmin:
+    description: Admin command to manage other players' homes.
+    usage: /homeadmin <player>
+    permission: infinitehomes.admin
+  htp:
+    description: Set teleport warmup delay (admin).
+    usage: /htp <seconds> [true|false]
+    permission: infinitehomes.admin
+  htpc:
+    description: Alias for /htp
+    usage: /htpc <seconds> [true|false]
+    permission: infinitehomes.admin
+
+permissions:
+  infinitehomes.admin:
+    description: Allows managing all players' homes.
+    default: op

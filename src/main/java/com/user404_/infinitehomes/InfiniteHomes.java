@@ -1,12 +1,17 @@
 package com.user404_.infinitehomes;
 
+import com.user404_.infinitehomes.gui.GUIListener;
+import com.user404_.infinitehomes.gui.HomeListGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,36 +20,46 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
-    private Map<UUID, Map<String, Location>> homes;
+    private Map<UUID, Map<String, HomeData>> homes;
     private Map<UUID, Long> cooldowns;
     private FileConfiguration homesConfig;
     private File homesFile;
     private Map<String, FileConfiguration> translations;
     private File translationsDir;
+    private GUIListener guiListener;
+    private TeleportManager teleportManager;   // NEW
 
     @Override
     public void onEnable() {
+        // Register HomeData for serialization
+        ConfigurationSerialization.registerClass(HomeData.class);
+
         homes = new HashMap<>();
         cooldowns = new HashMap<>();
         translations = new HashMap<>();
 
         setupHomesConfig();
+        // Force a reload after registration just to be safe
+        try {
+            homesConfig.load(homesFile);
+        } catch (Exception e) {
+            getLogger().severe("Could not reload homes.yml");
+        }
+
         loadHomesFromConfig();
         setupTranslations();
 
         // Standardkonfiguration erstellen, falls nicht vorhanden
         getConfig().addDefault("max-homes", -1);
         getConfig().addDefault("home-cooldown", -1);
+        // NEW default values
+        getConfig().addDefault("teleport-delay", -1);
+        getConfig().addDefault("teleport-delay-cancel-on-move", true);
         getConfig().options().copyDefaults(true);
         saveConfig();
 
@@ -52,7 +67,17 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         getCommand("home").setTabCompleter(this);
         getCommand("delhome").setTabCompleter(this);
 
+        // GUI Listener registrieren
+        guiListener = new GUIListener(this);
+        getServer().getPluginManager().registerEvents(guiListener, this);
+
+        // NEW: TeleportManager registrieren
+        teleportManager = new TeleportManager(this);
+        getServer().getPluginManager().registerEvents(teleportManager, this);
+
         getLogger().info("InfiniteHomes plugin enabled!");
+        getLogger().info("Please only use the official Version from User404/User404_/deutschich!");
+        getLogger().info("Other Versions may not be safe!");
     }
 
     @Override
@@ -122,8 +147,15 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
             translationsDir.mkdirs();
         }
 
-        // Standard-Übersetzung (Englisch) aus Ressourcen laden
+        // Übersetzungen auf den Server spielen
         saveResource("translations/texts_en.yml", false);
+        saveResource("translations/texts_de.yml", false);
+        saveResource("translations/texts_es.yml", false);
+        saveResource("translations/texts_fr.yml", false);
+        saveResource("translations/texts_it.yml", false);
+        saveResource("translations/texts_nl.yml", false);
+        saveResource("translations/texts_pt.yml", false);
+        saveResource("translations/texts_ru.yml", false);
 
         // Verfügbare Übersetzungen laden
         loadTranslations();
@@ -163,7 +195,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
     }
 
-    private String getMessage(Player player, String key) {
+    public String getMessage(Player player, String key) {
         // Sprache des Clients ermitteln
         String clientLanguage = player.getLocale().toLowerCase();
 
@@ -198,37 +230,54 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
     }
 
     private void loadHomesFromConfig() {
-        try {
-            for (String playerUuidString : homesConfig.getKeys(false)) {
+        homes.clear(); // Ensure map is empty before loading
+        for (String playerUuidString : homesConfig.getKeys(false)) {
+            try {
                 UUID playerUuid = UUID.fromString(playerUuidString);
-                Map<String, Location> playerHomes = new HashMap<>();
+                Map<String, HomeData> playerHomes = new HashMap<>();
 
-                for (String homeName : homesConfig.getConfigurationSection(playerUuidString).getKeys(false)) {
-                    Location location = (Location) homesConfig.get(playerUuidString + "." + homeName);
-                    playerHomes.put(homeName, location);
+                if (homesConfig.isConfigurationSection(playerUuidString)) {
+                    for (String homeName : homesConfig.getConfigurationSection(playerUuidString).getKeys(false)) {
+                        try {
+                            String path = playerUuidString + "." + homeName;
+                            Object obj = homesConfig.get(path);
+
+                            if (obj instanceof HomeData) {
+                                playerHomes.put(homeName, (HomeData) obj);
+                            } else if (obj instanceof org.bukkit.configuration.ConfigurationSection) {
+                                // If it's a section but not yet a HomeData object,
+                                // try to force deserialization from the Map
+                                Map<String, Object> values = homesConfig.getConfigurationSection(path).getValues(false);
+                                playerHomes.put(homeName, new HomeData(values));
+                            }
+                        } catch (Exception e) {
+                            getLogger().warning("Failed to load home '" + homeName + "' for player " + playerUuidString);
+                        }
+                    }
                 }
 
-                homes.put(playerUuid, playerHomes);
+                if (!playerHomes.isEmpty()) {
+                    homes.put(playerUuid, playerHomes);
+                }
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Failed to load UUID: " + playerUuidString, e);
             }
-        } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Error loading homes from config", e);
         }
     }
 
-    private void saveHomesToConfig() {
+    public void saveHomesToConfig() {
         try {
             // Clear existing data
             for (String key : homesConfig.getKeys(false)) {
                 homesConfig.set(key, null);
             }
 
-            // Save all homes
-            for (Map.Entry<UUID, Map<String, Location>> playerEntry : homes.entrySet()) {
+            // Save all homes in new format
+            for (Map.Entry<UUID, Map<String, HomeData>> playerEntry : homes.entrySet()) {
                 String playerUuidString = playerEntry.getKey().toString();
-
-                for (Map.Entry<String, Location> homeEntry : playerEntry.getValue().entrySet()) {
+                for (Map.Entry<String, HomeData> homeEntry : playerEntry.getValue().entrySet()) {
                     String path = playerUuidString + "." + homeEntry.getKey();
-                    homesConfig.set(path, homeEntry.getValue());
+                    homesConfig.set(path, homeEntry.getValue()); // ConfigurationSerializable will be stored as a section
                 }
             }
 
@@ -269,7 +318,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
                 homes.put(playerUuid, new HashMap<>());
             }
 
-            homes.get(playerUuid).put(homeName, player.getLocation());
+            homes.get(playerUuid).put(homeName, new HomeData(player.getLocation(), Material.RED_BED));
             saveHomesToConfig();
             player.sendMessage(getMessage(player, "home.set").replace("{home}", homeName));
             return true;
@@ -293,6 +342,12 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
 
         if (cmd.getName().equalsIgnoreCase("home")) {
+            if (args.length == 0) {
+                // Open GUI for player's own homes
+                new HomeListGUI(this, player, playerUuid, false, 0).open();
+                return true;
+            }
+
             if (args.length != 1) {
                 player.sendMessage(getMessage(player, "usage.home"));
                 return true;
@@ -318,8 +373,8 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
             String homeName = args[0].toLowerCase();
             if (homes.containsKey(playerUuid) && homes.get(playerUuid).containsKey(homeName)) {
-                player.teleport(homes.get(playerUuid).get(homeName));
-                player.sendMessage(getMessage(player, "home.teleport").replace("{home}", homeName));
+                // NEW: Use TeleportManager instead of direct teleport
+                teleportManager.requestTeleport(player, homeName, homes.get(playerUuid).get(homeName).getLocation());
             } else {
                 player.sendMessage(getMessage(player, "home.not_exist").replace("{home}", homeName));
             }
@@ -409,6 +464,102 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
             return true;
         }
 
+        if (cmd.getName().equalsIgnoreCase("homeadmin")) {
+            if (!player.hasPermission("infinitehomes.admin")) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+            if (args.length != 1) {
+                player.sendMessage("§cUsage: /homeadmin <player>");
+                return true;
+            }
+            String targetName = args[0];
+            Player target = Bukkit.getPlayer(targetName);
+            UUID targetUuid;
+            if (target != null) {
+                targetUuid = target.getUniqueId();
+            } else {
+                // Try offline player
+                @SuppressWarnings("deprecation")
+                OfflinePlayer offline = Bukkit.getOfflinePlayer(targetName);
+                if (offline.hasPlayedBefore()) {
+                    targetUuid = offline.getUniqueId();
+                } else {
+                    player.sendMessage("§cPlayer not found.");
+                    return true;
+                }
+            }
+            // Check if target has any homes
+            if (!homes.containsKey(targetUuid) || homes.get(targetUuid).isEmpty()) {
+                player.sendMessage("§cThat player has no homes.");
+                return true;
+            }
+            new HomeListGUI(this, player, targetUuid, true, 0).open();
+            return true;
+        }
+
+        // NEW: /htp and /htpc commands
+        if (cmd.getName().equalsIgnoreCase("htp") || cmd.getName().equalsIgnoreCase("htpc")) {
+            if (!player.hasPermission("infinitehomes.admin")) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+            if (args.length == 0) {
+                player.sendMessage("§cUsage: /htp <seconds> [true|false]");
+                return true;
+            }
+            try {
+                int seconds = Integer.parseInt(args[0]);
+                if (seconds < -1 || seconds > 60) {
+                    player.sendMessage("§cSeconds must be between -1 and 60.");
+                    return true;
+                }
+                boolean cancelOnMove = getConfig().getBoolean("teleport-delay-cancel-on-move", true);
+                if (args.length >= 2) {
+                    String bool = args[1].toLowerCase();
+                    if (bool.equals("true") || bool.equals("false")) {
+                        cancelOnMove = Boolean.parseBoolean(bool);
+                    } else {
+                        player.sendMessage("§cSecond argument must be true or false.");
+                        return true;
+                    }
+                }
+                // Save to config
+                getConfig().set("teleport-delay", seconds);
+                getConfig().set("teleport-delay-cancel-on-move", cancelOnMove);
+                saveConfig();
+
+                if (seconds == -1) {
+                    player.sendMessage(getMessage(player, "teleport.set.disabled"));
+                } else {
+                    player.sendMessage(getMessage(player, "teleport.setup")
+                            .replace("{time}", String.valueOf(seconds))
+                            .replace("{cancel}", String.valueOf(cancelOnMove)));
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(getMessage(player, "invalid_number"));
+            }
+            return true;
+        }
+
         return false;
+    }
+
+    // Getters for other classes
+    public Map<UUID, Map<String, HomeData>> getHomes() {
+        return homes;
+    }
+
+    public Map<UUID, Long> getCooldowns() {
+        return cooldowns;
+    }
+
+    public GUIListener getGUIListener() {
+        return guiListener;
+    }
+
+    // NEW getter for TeleportManager
+    public TeleportManager getTeleportManager() {
+        return teleportManager;
     }
 }
