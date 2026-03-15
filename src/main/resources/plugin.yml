@@ -25,3 +25,12 @@ commands:
   homecooldown:
     description: Set the global home cooldown (OP only).
     usage: /homecooldown <seconds>
+  homeadmin:
+    description: Admin command to manage other players' homes.
+    usage: /homeadmin <player>
+    permission: infinitehomes.admin
+
+permissions:
+  infinitehomes.admin:
+    description: Allows managing all players' homes.
+    default: op

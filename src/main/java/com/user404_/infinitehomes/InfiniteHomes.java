@@ -2,11 +2,14 @@ package com.user404_.infinitehomes;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,25 +18,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
+
+// GUI imports
+import com.user404_.infinitehomes.gui.GUIListener;
+import com.user404_.infinitehomes.gui.HomeListGUI;
 
 public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
-    private Map<UUID, Map<String, Location>> homes;
+    private Map<UUID, Map<String, HomeData>> homes;
     private Map<UUID, Long> cooldowns;
     private FileConfiguration homesConfig;
     private File homesFile;
     private Map<String, FileConfiguration> translations;
     private File translationsDir;
+    private GUIListener guiListener;
 
     @Override
     public void onEnable() {
+        // Register HomeData for serialization
+        ConfigurationSerialization.registerClass(HomeData.class);
+
         homes = new HashMap<>();
         cooldowns = new HashMap<>();
         translations = new HashMap<>();
@@ -52,13 +58,17 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         getCommand("home").setTabCompleter(this);
         getCommand("delhome").setTabCompleter(this);
 
-        getLogger().info("InfiniteHomes plugin by User404 enabled!");
+        // GUI Listener registrieren
+        guiListener = new GUIListener(this);
+        getServer().getPluginManager().registerEvents(guiListener, this);
+
+        getLogger().info("InfiniteHomes plugin enabled!");
     }
 
     @Override
     public void onDisable() {
         saveHomesToConfig();
-        getLogger().info("InfiniteHomes plugin by User404 disabled!");
+        getLogger().info("InfiniteHomes plugin disabled!");
     }
 
     @Override
@@ -123,14 +133,14 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
 
         // Standard-Übersetzung (Englisch) aus Ressourcen laden
-        saveResource("translations/texts_en.yml", true);
-        saveResource("translations/texts_de.yml", true);
-        saveResource("translations/texts_es.yml", true);
-        saveResource("translations/texts_fr.yml", true);
-        saveResource("translations/texts_it.yml", true);
-        saveResource("translations/texts_nl.yml", true);
-        saveResource("translations/texts_pt.yml", true);
-        saveResource("translations/texts_ru.yml", true);
+        saveResource("translations/texts_en.yml", false);
+        saveResource("translations/texts_de.yml", false);
+        saveResource("translations/texts_es.yml", false);
+        saveResource("translations/texts_fr.yml", false);
+        saveResource("translations/texts_it.yml", false);
+        saveResource("translations/texts_nl.yml", false);
+        saveResource("translations/texts_pt.yml", false);
+        saveResource("translations/texts_ru.yml", false);
 
         // Verfügbare Übersetzungen laden
         loadTranslations();
@@ -170,7 +180,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
     }
 
-    private String getMessage(Player player, String key) {
+    public String getMessage(Player player, String key) {
         // Sprache des Clients ermitteln
         String clientLanguage = player.getLocale().toLowerCase();
 
@@ -208,34 +218,49 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         try {
             for (String playerUuidString : homesConfig.getKeys(false)) {
                 UUID playerUuid = UUID.fromString(playerUuidString);
-                Map<String, Location> playerHomes = new HashMap<>();
-
-                for (String homeName : homesConfig.getConfigurationSection(playerUuidString).getKeys(false)) {
-                    Location location = (Location) homesConfig.get(playerUuidString + "." + homeName);
-                    playerHomes.put(homeName, location);
+                Map<String, HomeData> playerHomes = new HashMap<>();
+                if (homesConfig.isConfigurationSection(playerUuidString)) {
+                    for (String homeName : homesConfig.getConfigurationSection(playerUuidString).getKeys(false)) {
+                        String path = playerUuidString + "." + homeName;
+                        if (homesConfig.isLocation(path)) {
+                            // Old format: direct location
+                            Location loc = homesConfig.getLocation(path);
+                            playerHomes.put(homeName, new HomeData(loc, Material.RED_BED));
+                        } else if (homesConfig.isConfigurationSection(path)) {
+                            // New format: HomeData object (registered)
+                            Object obj = homesConfig.get(path);
+                            if (obj instanceof HomeData) {
+                                playerHomes.put(homeName, (HomeData) obj);
+                            } else {
+                                // Fallback: try to deserialize manually (if stored as map)
+                                HomeData data = (HomeData) homesConfig.get(path);
+                                playerHomes.put(homeName, data);
+                            }
+                        }
+                    }
                 }
-
-                homes.put(playerUuid, playerHomes);
+                if (!playerHomes.isEmpty()) {
+                    homes.put(playerUuid, playerHomes);
+                }
             }
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Error loading homes from config", e);
         }
     }
 
-    private void saveHomesToConfig() {
+    public void saveHomesToConfig() {
         try {
             // Clear existing data
             for (String key : homesConfig.getKeys(false)) {
                 homesConfig.set(key, null);
             }
 
-            // Save all homes
-            for (Map.Entry<UUID, Map<String, Location>> playerEntry : homes.entrySet()) {
+            // Save all homes in new format
+            for (Map.Entry<UUID, Map<String, HomeData>> playerEntry : homes.entrySet()) {
                 String playerUuidString = playerEntry.getKey().toString();
-
-                for (Map.Entry<String, Location> homeEntry : playerEntry.getValue().entrySet()) {
+                for (Map.Entry<String, HomeData> homeEntry : playerEntry.getValue().entrySet()) {
                     String path = playerUuidString + "." + homeEntry.getKey();
-                    homesConfig.set(path, homeEntry.getValue());
+                    homesConfig.set(path, homeEntry.getValue()); // ConfigurationSerializable will be stored as a section
                 }
             }
 
@@ -276,7 +301,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
                 homes.put(playerUuid, new HashMap<>());
             }
 
-            homes.get(playerUuid).put(homeName, player.getLocation());
+            homes.get(playerUuid).put(homeName, new HomeData(player.getLocation(), Material.RED_BED));
             saveHomesToConfig();
             player.sendMessage(getMessage(player, "home.set").replace("{home}", homeName));
             return true;
@@ -300,6 +325,16 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
         }
 
         if (cmd.getName().equalsIgnoreCase("home")) {
+            if (args.length == 0) {
+                // Open GUI for player's own homes
+                if (!homes.containsKey(playerUuid) || homes.get(playerUuid).isEmpty()) {
+                    player.sendMessage(getMessage(player, "homes.none"));
+                    return true;
+                }
+                new HomeListGUI(this, player, playerUuid, false, 0).open();
+                return true;
+            }
+
             if (args.length != 1) {
                 player.sendMessage(getMessage(player, "usage.home"));
                 return true;
@@ -325,7 +360,7 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
 
             String homeName = args[0].toLowerCase();
             if (homes.containsKey(playerUuid) && homes.get(playerUuid).containsKey(homeName)) {
-                player.teleport(homes.get(playerUuid).get(homeName));
+                player.teleport(homes.get(playerUuid).get(homeName).getLocation());
                 player.sendMessage(getMessage(player, "home.teleport").replace("{home}", homeName));
             } else {
                 player.sendMessage(getMessage(player, "home.not_exist").replace("{home}", homeName));
@@ -416,6 +451,53 @@ public class InfiniteHomes extends JavaPlugin implements TabCompleter {
             return true;
         }
 
+        if (cmd.getName().equalsIgnoreCase("homeadmin")) {
+            if (!player.hasPermission("infinitehomes.admin")) {
+                player.sendMessage(getMessage(player, "no_permission"));
+                return true;
+            }
+            if (args.length != 1) {
+                player.sendMessage("§cUsage: /homeadmin <player>");
+                return true;
+            }
+            String targetName = args[0];
+            Player target = Bukkit.getPlayer(targetName);
+            UUID targetUuid;
+            if (target != null) {
+                targetUuid = target.getUniqueId();
+            } else {
+                // Try offline player
+                @SuppressWarnings("deprecation")
+                OfflinePlayer offline = Bukkit.getOfflinePlayer(targetName);
+                if (offline.hasPlayedBefore()) {
+                    targetUuid = offline.getUniqueId();
+                } else {
+                    player.sendMessage("§cPlayer not found.");
+                    return true;
+                }
+            }
+            // Check if target has any homes
+            if (!homes.containsKey(targetUuid) || homes.get(targetUuid).isEmpty()) {
+                player.sendMessage("§cThat player has no homes.");
+                return true;
+            }
+            new HomeListGUI(this, player, targetUuid, true, 0).open();
+            return true;
+        }
+
         return false;
+    }
+
+    // Getters for other classes
+    public Map<UUID, Map<String, HomeData>> getHomes() {
+        return homes;
+    }
+
+    public Map<UUID, Long> getCooldowns() {
+        return cooldowns;
+    }
+
+    public GUIListener getGUIListener() {
+        return guiListener;
     }
 }
